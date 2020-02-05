@@ -9,8 +9,8 @@ namespace Isen.Dotnet.Library.Context
         // Listes des classes modèle / tables
         public DbSet<Person> PersonCollection { get; set; }
         public DbSet<City> CityCollection { get; set; }
-        public DbSet<Service>ServiceCollection{get; set;}
-        public DbSet<Role>RoleCollection{get;set;}
+        public DbSet<Service> ServiceCollection {get; set;}
+        public DbSet<Role> RoleCollection {get;set;}
 
         public ApplicationDbContext(
             [NotNullAttribute] DbContextOptions options) : 
@@ -50,6 +50,14 @@ namespace Isen.Dotnet.Library.Context
             // Id ou PersonId est reconnu comme convention
             // pour les clés primaires ou étrangères
             modelBuilder.Entity<Person>()
+                .HasKey(p => p.Id);
+
+            modelBuilder.Entity<Service>()
+                .ToTable(nameof(Service))
+                .HasKey(s => s.Id);
+
+            modelBuilder.Entity<Role>()
+                .ToTable(nameof(Role))
                 .HasKey(p => p.Id);
 
             modelBuilder.Entity<PersonRole>()

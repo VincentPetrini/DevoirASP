@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text;
 
 namespace Isen.Dotnet.Library.Model
 {
@@ -33,5 +34,15 @@ namespace Isen.Dotnet.Library.Model
         public override string ToString() =>
             $"{FirstName} {LastName} | {DateOfBirth} ({Age}) | {BirthCity} / {ResidenceCity}";
         
+        public string getRoles(){
+            var rolesString = new StringBuilder();
+            rolesString.Append(PersonRoles[0]?.Role?.Name);
+            for(var i = 1; i < PersonRoles?.Count; i++)
+            {
+                rolesString.Append(", ");
+                rolesString.Append(PersonRoles[i]?.Role?.Name);
+            }
+            return rolesString.ToString();
+        }
     }
 }

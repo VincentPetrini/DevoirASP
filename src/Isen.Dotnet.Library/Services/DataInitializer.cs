@@ -32,6 +32,18 @@ namespace Isen.Dotnet.Library.Services
             "Sarrazin",
             "Vu Dinh"
         };
+         private List<string> _mail => new List<string>
+        {
+            "gmail.com",
+            "isen.fr",
+            "hotmail.fr",
+            "isen.yncrea.fr",
+            "me.com",
+            "yncrea.fr",
+            "yahoo.com"
+        };
+
+
         // Générateur aléatoire
         private readonly Random _random;
 
@@ -62,21 +74,49 @@ namespace Isen.Dotnet.Library.Services
                 return cities[_random.Next(cities.Count)];
             }
         }
-
         // Générateur de date
         private DateTime RandomDate =>
             new DateTime(_random.Next(1980, 2010), 1, 1)
                 .AddDays(_random.Next(0, 365));
-        // Générateur de personne
-        private Person RandomPerson => new Person()
-        {
-            FirstName = RandomFirstName,
-            LastName = RandomLastName,
-            DateOfBirth = RandomDate,
-            BirthCity = RandomCity,
-            ResidenceCity = RandomCity
-        };
+        private string RandomTelephoneNumber =>
+            "06" + _random.Next(10000000, 99999999);
+        private string RandomMail => 
+            _mail[_random.Next(_mail.Count)];
         // Générateur de personnes
+
+        // Générateur de personne
+        private Person RandomPerson 
+        {    
+            get
+            {
+                var firstName = RandomFirstName;
+                var lastName = RandomLastName;
+                var person = new Person(){
+                    FirstName = firstName,
+                    LastName = lastName,
+                    DateOfBirth = RandomDate,
+                    BirthCity = RandomCity,
+                    ResidenceCity = RandomCity,
+                    TelephoneNumber = RandomTelephoneNumber,
+                    MailAddress = $"{firstName}.{lastName}@{RandomMail}",
+                    Service = RandomService,
+                    PersonRoles = new MyCollection<PersonRole>()
+                };
+
+                var roles = RandomRole;
+                foreach (var role in roles)
+                {
+                    var PersonRole = new PersonRole() { 
+                        Person = person,
+                        Role = role
+                    };
+                    person.PersonRoles.Add(PersonRole);
+                    role.PersonRoles.Add(PersonRole);
+                }
+                return person;
+            }
+        }
+
         public List<Person> GetPersons(int size)
         {
             var persons = new List<Person>();
@@ -86,6 +126,8 @@ namespace Isen.Dotnet.Library.Services
             }
             return persons;
         }
+
+
 
         public List<City> GetCities()
         {
@@ -100,6 +142,51 @@ namespace Isen.Dotnet.Library.Services
                 new City { Name = "Lille", Zip = "59000", Lat = 50.6310623, Lon = 3.0121411}
             };
         }
+
+        public List<Service> GetServices()
+        {
+            return new List<Service>
+            {
+                new Service { Name = "Marketing"},
+                new Service { Name = "Production"},
+                new Service { Name = "Renseignement"},
+                new Service { Name = "Technique"},
+                new Service { Name = "Direction"},
+                new Service { Name = "Public"},
+            };
+        }
+
+        public List<Role> GetRoles()
+        {
+            return new List<Role>
+            {
+                new Role { Name = "Utilisateur", PersonRoles = new MyCollection<PersonRole>() },
+                new Role { Name = "Manager", PersonRoles = new MyCollection<PersonRole>() },
+                new Role { Name = "Administrateur", PersonRoles = new MyCollection<PersonRole>() },
+                new Role { Name = "Superadministrateur", PersonRoles = new MyCollection<PersonRole>() }
+            };
+        }
+
+         private List<Role> RandomRole
+        {
+            get
+            {
+                var roles = _context.RoleCollection.ToList();
+                roles.OrderBy(x => _random.Next()).ToList();
+                List<Role> role = roles.OrderBy(x => _random.Next()).ToList().GetRange(0, _random.Next(roles.Count-1)+1);
+                return role;
+            }
+        }
+
+        private Service RandomService
+        {
+            get
+            {
+                var services = _context.ServiceCollection.ToList();
+                return services[_random.Next(services.Count)];
+            }
+        }
+
 
         public void DropDatabase()
         {
@@ -133,6 +220,24 @@ namespace Isen.Dotnet.Library.Services
             if (_context.CityCollection.Any()) return;
             var cities = GetCities();
             _context.AddRange(cities);
+            _context.SaveChanges();
+        }
+
+        public void AddRoles()
+        {
+            _logger.LogWarning("Adding roles...");
+            if (_context.RoleCollection.Any()) return;
+            var roles = GetRoles();
+            _context.AddRange(roles);
+            _context.SaveChanges();
+        }
+
+        public void AddServices()
+        {
+            _logger.LogWarning("Adding services...");
+            if (_context.ServiceCollection.Any()) return;
+            var services = GetServices();
+            _context.AddRange(services);
             _context.SaveChanges();
         }
     }
